@@ -1,11 +1,112 @@
 # 간편식 수요 예측 및 공정 최적화를 통한 생산 효율 향상
 HMR 제조공정 최적화로 매출 증가
 
-### 상세 내용은 피피티 참고
+
+## 프로젝트 목표
+![image](https://user-images.githubusercontent.com/114542921/208440085-1e8a63a9-3d94-4075-9888-ed8e6cc729b4.png)
+
+## 사용 언어와 툴
+<img src="https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=Python&logoColor=white"/>  <img src="https://img.shields.io/badge/Google Colab-F9AB00?style=flat-square&logo=Google Colab&logoColor=white"/>
+
+
+품목 코드의 앞자리가 1인 품목과 2인 품목 비교하기
+```
+# 1과 2 나누기
+product_s_1 = product_s[product_s['품목코드'].str.startswith('1')==True]
+print(len(product_s_1))
+
+# 중복제거
+product_s_1_d =  product_s_1.drop_duplicates(subset=['품목코드'], keep='first', ignore_index=False)
+print(len(product_s_1_d))
+
+product_s_2 = product_s[product_s['품목코드'].str.startswith('2')==True]
+print(len(product_s_2))
+
+product_s_2_d = product_s_2.drop_duplicates(subset=['품목코드'], keep='first', ignore_index=False)
+print(len(product_s_2_d))
+
+# 1인 데이터 품목명에 (재) 추가하기
+product_s_1_d['재추가']= product_s_1_d['품목명'].apply(lambda x: str(x)+'(재)')
+
+# 2인 데이터를 1로 변경한 컬럼 생성
+product_s_2_d['품목코드_통일'] = product_s['품목코드'].str.slice(start=1)
+product_s_2_d['품목코드_통일'] = '1'+product_s_2_d['품목코드_통일']
+
+# 2인 데이터의 품목코드_통일 컬럼 기준으로 합치기
+product_s_2_d_merge = product_s_2_d.merge(product_s_1_d, how= 'left', left_on = '품목코드_통일', right_on = '품목코드')
+product_s_2_d_merge
+
+```
+제품군별 출하완료여부 비율 시각화
+```
+fig, ax = plt.subplots(1,3,figsize=(20,10))
+x=['출하미완료','출하완료']
+y=product_booking_cooking_no_ideal_source_yn['품목명']
+ax[0][0].pie(y, labels=x, labeldistance=1.09, autopct='%.2f%%', pctdistance=0.7, textprops= {'fontsize':15},
+             colors=palette,wedgeprops={'ec':'w', 'lw':1})
+
+y=product_booking_cooking_no_ideal_bob_yn['품목명']
+ax[0][1].pie(y, labels=x, labeldistance=1.09, autopct='%.2f%%', pctdistance=0.7, textprops= {'fontsize':15},
+             colors=palette,wedgeprops={'ec':'w', 'lw':1})
+
+y=product_booking_cooking_no_ideal_dress_yn['품목명']
+ax[0][2].pie(y, labels=x, labeldistance=1.09, autopct='%.2f%%', pctdistance=0.7, textprops= {'fontsize':15},
+             colors=palette,wedgeprops={'ec':'w', 'lw':1})
+
+ax[0][0].set_title('source')
+ax[0][1].set_title('bob')
+ax[0][2].set_title('dress')
+
+```
+![image](https://user-images.githubusercontent.com/114542921/208444809-0076906e-9768-4967-b32e-52e37d4b1928.png)
+
+전날 수량값으로 채운 데이터프레임 만들고 모델링
+```
+# 전날 수량값으로 채운 데이터프레임 만들기
+def model(x):
+    subset_plot_sort_test_model = subset_plot_sort_kg.tail(x) 
+    for i in range(x):
+        df_shifted = subset_plot_sort_kg.shift(i+1)
+        df_shifted = df_shifted.dropna()
+        day = df_shifted.tail(x).values
+        subset_plot_sort_test_model[f'day{i+1}'] =day
+        subset_plot_sort_test_model= subset_plot_sort_test_model.iloc[:,:3].copy()
+    return subset_plot_sort_test_model
+    
+# 인풋, 타겟 설정
+x=subset_plot_sort_test_model.drop(['수주수량KG'], axis=1) # input
+y=subset_plot_sort_test_model['수주수량KG'] # target
+
+# 트레인/ 테스트 구분
+x_train, x_test, y_train, y_test = train_test_split(x,y,test_size=0.2)
+
+# 정규화
+from sklearn.preprocessing import StandardScaler
+scaler = StandardScaler()
+scaler.fit(x_train)
+x_train_sc = scaler.transform(x_train)
+x_test_sc = scaler.transform(x_test)
+
+# 학습
+from sklearn.ensemble import RandomForestRegressor
+clf = RandomForestRegressor(max_depth=10)
+clf.fit(x_train_sc, y_train)
+
+# train 정확도
+clf.score(x_train, y_train)
+```
+
+## 개선 사항
+전처리를 어떤 기준으로 해야 하는지 정하는 게 힘들고 과정 자체도 오래 걸려서 힘들었다.
+- 접근 방향성을 잘 잡고 기준을 명확히 한다.
+
+상관도가 높다고 모델이 정확도 높게 만들어지는 것은 아니어서 모델의 인풋 값을 정하는 것이 어려웠다.
+- 시각화를 통해 데이터 분석을 충분히 진행한 후 모델링을 해야 한다.
+
+제품군을 분류하는 간단한 방법이 뭐가 있을지 고민해 본다.
+
+## 상세 내용은 피피티와 코드 파일 참고
 > RPA2기_프로젝트4_3조_김민솔.pptx
 
-## Notion Link
-[Project2](https://determined-fan-807.notion.site/Project2-4e171a5352b84e18a2858cc7f671789b)
-> Alpaco_Python_Project2.ipynb (정리본)
-> Alpaco_Python_Project2_1.ipynb, Alpaco_Python_Project2_2.ipynb, Alpaco_Python_Project2_3.ipynb
+> Alpaco_Python_Project2.ipynb
 
