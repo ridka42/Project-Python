@@ -1,6 +1,6 @@
 <img src="https://capsule-render.vercel.app/api?type=Waving&color=auto&height=300&section=header&text=Python+프로젝트&fontSize=70" />
 
-### Alpaco
+### with Alpaco
 
 <details>
 <summary>간편식 수요 예측 및 공정 최적화를 통한 생산 효율 향상
