@@ -1,5 +1,4 @@
-# Python 프로젝트
-
+<img src="https://capsule-render.vercel.app/api?type=Waving&color=auto&height=300&section=header&text=Python+프로젝트&fontSize=70" />
 
 ### Alpaco
 
