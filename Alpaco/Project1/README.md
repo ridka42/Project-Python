@@ -9,8 +9,10 @@ HMR 제조공정 최적화로 매출 증가
 <img src="https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=Python&logoColor=white"/>  <img src="https://img.shields.io/badge/Google Colab-F9AB00?style=flat-square&logo=Google Colab&logoColor=white"/>
 
 
-품목 코드의 앞자리가 1인 품목과 2인 품목 비교하기
-```
+#### 품목 코드의 앞자리가 1인 품목과 2인 품목 비교하기
+* 데이터프레임의 앞자리만 자르는 방법을 몰라서 [0]처럼 인덱스로 불러오려 했지만 실패.
+  * slice를 사용
+```python
 # 1과 2 나누기
 product_s_1 = product_s[product_s['품목코드'].str.startswith('1')==True]
 print(len(product_s_1))
@@ -37,8 +39,9 @@ product_s_2_d_merge = product_s_2_d.merge(product_s_1_d, how= 'left', left_on = 
 product_s_2_d_merge
 
 ```
-제품군별 출하완료여부 비율 시각화
-```
+#### 제품군별 출하완료여부 비율 시각화
+* 서브플롯 만드는 법이 항상 헷갈렸는데 이번 기회에 확실히 알게 되었다.
+```python
 fig, ax = plt.subplots(1,3,figsize=(20,10))
 x=['출하미완료','출하완료']
 y=product_booking_cooking_no_ideal_source_yn['품목명']
@@ -60,8 +63,10 @@ ax[0][2].set_title('dress')
 ```
 ![image](https://user-images.githubusercontent.com/114542921/208444809-0076906e-9768-4967-b32e-52e37d4b1928.png)
 
-전날 수량값으로 채운 데이터프레임 만들고 모델링
-```
+#### 전날 수량값으로 채운 데이터프레임 만들고 모델링
+* 그냥 수치형 컬럼이나 범주형 컬럼을 수치형으로 바꾼 후 인풋으로 넣는 것이 아니라 관련 있는 컬럼만 넣어야 한다.
+  * 정확도가 높게 나오지 않아서 다음 모델링엔 시계열을 사용해 볼 예정이다.
+```python
 # 전날 수량값으로 채운 데이터프레임 만들기
 def model(x):
     subset_plot_sort_test_model = subset_plot_sort_kg.tail(x) 
